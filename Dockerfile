@@ -23,12 +23,8 @@ RUN pip install \
 RUN jupyter contrib nbextension install --user &&\
     jupyter nbextensions_configurator enable --user
 
-ADD python-circonusapi ./
-RUN cd python-circonusapi; python setup.py install
-
 EXPOSE 9999
 
-ADD notebook.sh ./
 ADD cmd.sh ./
 
 CMD ["./cmd.sh"]
