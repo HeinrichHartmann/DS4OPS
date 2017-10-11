@@ -23,6 +23,12 @@ RUN pip install \
 RUN jupyter contrib nbextension install --user &&\
     jupyter nbextensions_configurator enable --user
 
+# install latest circonusapi package from GitHUb
+RUN (cd /tmp && \
+        git clone https://github.com/circonus-labs/python-circonusapi.git && \
+        cd python-circonusapi && \
+        python setup.py install)
+
 EXPOSE 9999
 
 ADD cmd.sh ./
