@@ -1,3 +1,0 @@
-[submodule "work/datasets"]
-	path = work/datasets
-	url = git@github.com:HeinrichHartmann/MonitoringDatasets.git
