@@ -15,7 +15,7 @@
      ```
    - Pull this repository from github
      ```
-     git pull https://github.com/HeinrichHartmann/DataScience4Ops
+     git clone https://github.com/HeinrichHartmann/DataScience4Ops
      ```
    - Read through Dockerfile and docker.sh
    - Bootstrap work environment:
