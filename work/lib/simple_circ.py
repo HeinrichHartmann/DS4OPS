@@ -5,8 +5,9 @@
 import sys
 from circonusapi import circonusapi
 import pandas as pd
+import math
 
-class simple_circ:
+class api:
 
     def __init__(self, token):
         self.token = token
@@ -31,8 +32,7 @@ class simple_circ:
             "end": int(start + count * period),
             "format" : "object"
         })['data']))
-        out = out + [None] * (out.len - count) # extend length if needed
-        return out
+        return out + [None] * (count - len(out)) # extend length if needed
 
     def search_fetch(self, q, start, period, count, **kwargs):
         out = {}
