@@ -30,7 +30,7 @@ So no digital artifacts are available for that.
 
 * [Wes McKinley -- Python for Data Analysis (O'Reilly 2012)](http://shop.oreilly.com/product/0636920023784.do) -- Python, Jupyter (=IPython), numpy, matplotlib, pandas
 
-* [Jaons Dixon -- Monitoring with Graphite (O'Reilly 2017)[http://shop.oreilly.com/product/0636920035794.do] -- Intro to Graphite. Also covers built in Analytics capabilities.
+* [Jaons Dixon -- Monitoring with Graphite (O'Reilly 2017)](http://shop.oreilly.com/product/0636920035794.do) -- Intro to Graphite. Also covers built in Analytics capabilities.
 
 * [Baron Schwarz - Practical Scalability Analysis with the Universal Scalability Law (ebook, 2015)](https://www.vividcortex.com/resources/universal-scalability-law/)
 
