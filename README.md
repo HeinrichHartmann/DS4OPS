@@ -38,6 +38,12 @@ So no digital artifacts are available for that.
 
 * [John Rice -- Mathematical Data Analysis and Statistics (Duxbury Press, 2006)](https://www.amazon.com/Mathematical-Statistics-Analysis-Available-Enhanced/dp/0534399428) -- In depth coverage of Math-1,2,3 sessisons.
 
+Also check out my writings on Statistics for Enginners
+
+* [Statistics For Engineers (Atricle ACM-Queue/CACM)](http://queue.acm.org/detail.cfm?id=2903468)
+
+* [Statistics For Engineers (Course Material on GitHub)](https://github.com/HeinrichHartmann/Statistics-for-Engineers)
+
 ## Datasets
 
 | Name | Description | Size |
