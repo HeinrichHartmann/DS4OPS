@@ -15,7 +15,7 @@ Workshop Material
 
 ## Material
 
-* docker.sh -- Script to bootstrap work environment
+* docker.sh -- Script to bootstrap work environment (e.g. on [Strigo](http://strigo.io))
 
 * work/S*.ipynb -- Jupyter Notebooks used in presentation
 
