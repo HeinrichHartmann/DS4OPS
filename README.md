@@ -32,7 +32,7 @@ So no digital artifacts are available for that.
 
 * [Jaons Dixon -- Monitoring with Graphite (O'Reilly 2017)[http://shop.oreilly.com/product/0636920035794.do] -- Intro to Graphite. Also covers built in Analytics capabilities.
 
-* [Baron Schwarz - Practical Scalability Analysis with the Universal Scalability Law (ebook, 2015)])(https://www.vividcortex.com/resources/universal-scalability-law/)
+* [Baron Schwarz - Practical Scalability Analysis with the Universal Scalability Law (ebook, 2015)](https://www.vividcortex.com/resources/universal-scalability-law/)
 
 * [Baron Schwarz - Essential Guide to Queuing Theory (ebook, 2016)](https://www.vividcortex.com/resources/queueing-theory)
 
