@@ -9,12 +9,17 @@ RUN apt-get install -y\
     emacs \
     tmux \
     curl \
-    less
+    less \
+    man \
+    autoconf \
+    strace
 
 # Give $NB_USER passwordless sudo
 RUN printf "$NB_USER\tALL=(ALL)\tNOPASSWD: ALL" > /etc/sudoers.d/$NB_USER
 
 USER $NB_USER
+
+RUN pip install --upgrade pip
 
 RUN pip install \
     jupyter_contrib_nbextensions \
@@ -29,6 +34,13 @@ RUN (cd /tmp && \
         cd python-circonusapi && \
         python setup.py install)
 
+# install latest libcircllhist
+RUN git clone --branch master https://github.com/circonus-labs/libcircllhist/ /tmp/libcircllhist
+RUN (cd /tmp/libcircllhist && \
+     autoconf && ./configure --libdir /usr/lib/x86_64-linux-gnu/ && \
+     make && sudo make install && (cd src && make install-python))
+
+EXPOSE 9998
 EXPOSE 9999
 
 ADD cmd.sh ./
