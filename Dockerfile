@@ -35,7 +35,7 @@ RUN (cd /tmp && \
         python setup.py install)
 
 # install latest libcircllhist
-RUN git clone --branch ffi-cleanup https://github.com/circonus-labs/libcircllhist/ /tmp/libcircllhist
+RUN git clone https://github.com/circonus-labs/libcircllhist/ /tmp/libcircllhist
 RUN (cd /tmp/libcircllhist && \
      autoconf && ./configure --libdir /usr/lib/x86_64-linux-gnu/ && \
      make && sudo make install && (cd src && make install-python))
