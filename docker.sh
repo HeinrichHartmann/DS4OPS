@@ -15,6 +15,9 @@ do
         --push)
             docker push heinrichhartmann/ds4ops
             ;;
+        --pull)
+            docker pull heinrichhartmann/ds4ops
+            ;;
         --run)
             docker run --rm -it "$@" \
                    -p 9999:9999 -p 9998:9998 \
