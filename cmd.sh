@@ -5,6 +5,7 @@ echo "#"
 echo "# Data Science 4 Effective Operations"
 echo "#"
 echo "# starting jupyter notebook&lab ... "
+echo "$TOKEN" > token.txt
 jupyter notebook --ip 0.0.0.0 --port 9999 --NotebookApp.token="$TOKEN" &> notebook.log &
 jupyter lab --ip 0.0.0.0 --port 9998 --NotebookApp.token="$TOKEN" &> lab.log &
 sleep 3
