@@ -18,11 +18,12 @@ FORMAT_FIELDS = [ "count",
     "derivative_stddev",
     "value" ]
 
-def _cid2check_id(s):
-    return s[len('/check/'):]
+def _cid2check_id(cid):
+    return cid[len('/check/'):]
 
-def _iter_pages(api, method, endpoint, params={}):
+def _iter_pages(api, method, endpoint, params=None):
     "Merge paginated results into a single iterator"
+    params = params or {}
     _from = 0
     _size = 100
     while True:
@@ -70,10 +71,19 @@ class CirconusMetricList(list):
     "Holds multiple metrics"
 
     def fetch(self, *args, **kwargs):
+        "Fetch all metrics, return result as map"
         return {
             repr(metric) : metric.fetch(*args, **kwargs)
             for metric in self
         }
+
+    def __repr__(self):
+        return "CirconusMetricList" + str(list(self))
+
+    def __str__(self):
+        "print metric List as table"
+        def fmt(m): return "{:<10} {}".format(m._check_id, m._name)
+        return "\n".join([ "check_id   metric_name", "-"*30 ] + list(map(fmt, self)))
 
 class CirconusData(object):
     "Circonus data fetching class"
@@ -86,5 +96,3 @@ class CirconusData(object):
         params = {"search": search}
         fmt = lambda rec: CirconusMetric(self.api, rec)
         return CirconusMetricList(map(fmt, _iter_pages(self.api, "GET", "/metric", params=params)))
-
-    def caql(self, query):
