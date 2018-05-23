@@ -44,5 +44,6 @@ EXPOSE 9998
 EXPOSE 9999
 
 ADD cmd.sh ./
+ADD service.sh ./
 
 CMD ["./cmd.sh"]

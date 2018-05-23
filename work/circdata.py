@@ -7,6 +7,7 @@ To gain access to the full functionality use the circonusapi module.
 
 from circonusapi import circonusapi
 from circllhist import Circllhist
+from datetime import datetime
 
 FORMAT_FIELDS = [
     "count",
@@ -23,6 +24,9 @@ FORMAT_FIELDS = [
     "histogram" ]
 HIST_STATES = ["active", "true"]
 NAN = float('nan')
+
+################################################################################
+## Helper Functions
 
 def _cid2check_id(cid):
     return cid[len('/check/'):]
@@ -56,14 +60,24 @@ def _extend(kind, count, lst):
     if kind == "histogram":
         lst += [ Circllhist() for i in range(count - len(lst)) ]
         return lst
-    # else:
-    for i, y in enumerate(lst):
-        if not y:
-            lst[i] = NAN
-    lst += [NAN]*(count - len(lst))
-    return lst
+    else:
+        for i, y in enumerate(lst):
+            if not y:
+                lst[i] = NAN
+        lst += [NAN]*(count - len(lst))
+        return lst
+
+def _caql_infer_type(res):
+    if len(res[0]) >= 3 and type(res[0][2]) == dict:
+        return "histogram"
+    else:
+        return "numeric"
+
+################################################################################
+## Classes
 
 def CirconusMetricFactory(api, rec):
+    "Create a suitable CirconusMetric object from an API result"
     check_id = _cid2check_id(rec["_check"])
     name = rec['_metric_name']
     if rec['_histogram'] in HIST_STATES:
@@ -95,7 +109,7 @@ class CirconusMetricNumeric(CirconusMetric):
     def type(self):
         return "numeric"
 
-    def fetch(self, start, period, count, kind="value"):
+    def fetch(self, start, period, count, kind):
         "Fetch data from a numeric metric"
         assert(kind in FORMAT_FIELDS)
         if kind == "histogram":
@@ -116,14 +130,14 @@ class CirconusMetricNumeric(CirconusMetric):
             "format_fields" : kind,
         }
         endpoint = "data/{}_{}".format(self._check_id, self._name)
-        return _extend(kind, count, list(map(fmt, self._api.api_call("GET", endpoint, params=params)['data'][:20])))
+        return _extend(kind, count, list(map(fmt, self._api.api_call("GET", endpoint, params=params)['data'][:count])))
 
 class CirconusMetricHistogram(CirconusMetric):
 
     def type(self):
         return "histogram"
 
-    def fetch(self, start, period, count, kind="value"):
+    def fetch(self, start, period, count, kind):
         "Fetch data from a histogram metric"
         assert(kind in FORMAT_FIELDS)
         params = {
@@ -135,15 +149,27 @@ class CirconusMetricHistogram(CirconusMetric):
         }
         def fmt(rec): return _hist2kind(Circllhist.from_dict(rec[2]), kind)
         endpoint = "data/{}_{}".format(self._check_id, self._name)
-        return _extend(kind, count, list(map(fmt, self._api.api_call("GET", endpoint, params=params)['data'][:20])))
+        return _extend(kind, count, list(map(fmt, self._api.api_call("GET", endpoint, params=params)['data'][:count])))
 
 class CirconusMetricList(list):
-    "Holds multiple metrics"
+    """Holds multiple Circonus Metrics.
+    - Can be used like a list to access the individual member metrics
+    - __str__() returns a table formatted table representation
+    - fetch() can be used to fetch data
+    """
 
-    def fetch(self, *args, **kwargs):
-        "Fetch all metrics, return result as map"
+    def fetch(self, start, period, count, kind="value"):
+        """
+        Fetch data from all metrics in the list.
+        Return result as map: metric_name => list
+        Fetches are done serially. Use CAQL for parallel data fetching.
+        """
+        # TODO: Add time column
+        # TODO: sanatize start time to align to period
+        if type(start) == datetime:
+            start = start.timestamp()
         return {
-            repr(metric) : metric.fetch(*args, **kwargs)
+            repr(metric) : metric.fetch(start, period, count, kind)
             for metric in self
         }
 
@@ -151,18 +177,53 @@ class CirconusMetricList(list):
         return "CirconusMetricList" + str(list(self))
 
     def __str__(self):
-        "print metric List as table"
+        "Print metric List as table"
         def fmt(m): return "{:<10} {:<10} {:<50}".format(m.check_id(), m.type(), m.name())
         return "\n".join([ "check_id   type       metric_name", "-"*50 ] + list(map(fmt, self)))
+
 
 class CirconusData(object):
     "Circonus data fetching class"
 
     def __init__(self, token):
-        self.api = circonusapi.CirconusAPI(token)
+        self._api = circonusapi.CirconusAPI(token)
 
     def search(self, search="", kind=None):
-        "Iterate over all metrics matching search"
+        """Search for metrics using the metric search API.
+        Returns a CirconusMetricList Object, that can be used to fetch data.
+        """
         params = {"search": search}
-        fmt = lambda rec: CirconusMetricFactory(self.api, rec)
-        return CirconusMetricList(map(fmt, _iter_pages(self.api, "GET", "/metric", params=params)))
+        fmt = lambda rec: CirconusMetricFactory(self._api, rec)
+        return CirconusMetricList(map(fmt, _iter_pages(self._api, "GET", "/metric", params=params)))
+
+    def caql(self, query, start, period, count):
+        """
+        Fetch data using CAQL.
+        Returns a map: slot_name => list
+        Limitations:
+        - slots_names are currently output[i]
+        - For histogram output only a single slot is returned
+        """
+        if type(start) == datetime:
+            start = start.timestamp()
+        params = {
+            "query": query,
+            "period": period,
+            "start": int(start),
+            "end": int(start + count * period),
+        }
+        res = self._api.api_call("GET", "/caql", params=params)['_data']
+        if _caql_infer_type(res) == "histogram":
+            # In this case, we have only a single output metric and res looks like:
+            # res = [[1467892920, 60, {'1.2e+02': 1, '2': 1, '1': 1}], ... ]
+            return {
+                'output[0]' : [ Circllhist.from_dict(row[2]) for row in res ]
+            }
+        else:
+            # In the numeric case res looks like this:
+            # res = [[1467892920, [1, 2, 3]], [1467892980, [1, 2, 3]], ... ]
+            out = {}
+            width = len(res[0][1])
+            for i in range(width):
+                out['output[{}]'.format(i)] = [ row[1][i] for row in res ]
+            return out
