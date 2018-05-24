@@ -5,9 +5,12 @@ This module provides simplified methods for data fetching operations.
 To gain access to the full functionality use the circonusapi module.
 """
 
+import math
+from datetime import datetime
+from itertools import islice
+
 from circonusapi import circonusapi
 from circllhist import Circllhist
-from datetime import datetime
 
 FORMAT_FIELDS = [
     "count",
@@ -24,6 +27,7 @@ FORMAT_FIELDS = [
     "histogram" ]
 HIST_STATES = ["active", "true"]
 NAN = float('nan')
+BIG_INT=2**64-1
 
 ################################################################################
 ## Helper Functions
@@ -31,17 +35,22 @@ NAN = float('nan')
 def _cid2check_id(cid):
     return cid[len('/check/'):]
 
-def _iter_pages(api, method, endpoint, params=None):
+def _iter_pages(api, method, endpoint, params=None, limit=BIG_INT):
     "Merge paginated results into a single iterator"
     params = params or {}
     _from = 0
-    _size = 100
+    _size = min(1000, limit)
+    _count = 0
     while True:
         params["size"] = _size
         params["from"] = _from
         res = api.api_call(method, endpoint, params=params)
-        if not res: break
+        if not res:
+            break
         for r in res:
+            _count += 1
+            if _count > limit:
+                break
             yield r
         _from += _size
 
@@ -73,6 +82,16 @@ def _caql_infer_type(res):
     else:
         return "numeric"
 
+def _fix_time(start, period):
+    if type(start) == datetime:
+        return _fix_time(start.timestamp(), period)
+    if not start % period == 0:
+        raise Exception(
+            "start parameter {} is not divisible by period {}. Use e.g. {} instead.".format(
+                start, period, math.floor(start/period)
+            ))
+    return start
+
 ################################################################################
 ## Classes
 
@@ -92,11 +111,8 @@ class CirconusMetric(object):
         self._check_id = check_id
         self._name = name
 
-    def __str__(self):
-        return "CirconusMetric{{check_id={},name={}}}".format(self._check_id, self._name)
-
     def __repr__(self):
-        return self._check_id + "/" + self._name
+        return "CirconusMetric{{check_id={},name={}}}".format(self._check_id, self._name)
 
     def name(self):
         return self._name
@@ -164,17 +180,16 @@ class CirconusMetricList(list):
         Return result as map: metric_name => list
         Fetches are done serially. Use CAQL for parallel data fetching.
         """
-        # TODO: Add time column
-        # TODO: sanatize start time to align to period
-        if type(start) == datetime:
-            start = start.timestamp()
-        return {
-            repr(metric) : metric.fetch(start, period, count, kind)
-            for metric in self
-        }
+        start = _fix_time(start, period)
+        out = {}
+        out['time'] = [ start + n * period for n in range(count) ]
+        for metric in self:
+            key = "{}/{}".format(metric.check_id(), metric.name())
+            out[key] = metric.fetch(start, period, count, kind)
+        return out
 
     def __repr__(self):
-        return "CirconusMetricList" + str(list(self))
+        return "CirconusMetricList(len={})".format(len(self))
 
     def __str__(self):
         "Print metric List as table"
@@ -188,13 +203,13 @@ class CirconusData(object):
     def __init__(self, token):
         self._api = circonusapi.CirconusAPI(token)
 
-    def search(self, search="", kind=None):
+    def search(self, search="", kind=None, limit=BIG_INT):
         """Search for metrics using the metric search API.
         Returns a CirconusMetricList Object, that can be used to fetch data.
         """
         params = {"search": search}
         fmt = lambda rec: CirconusMetricFactory(self._api, rec)
-        return CirconusMetricList(map(fmt, _iter_pages(self._api, "GET", "/metric", params=params)))
+        return CirconusMetricList(map(fmt, _iter_pages(self._api, "GET", "/metric", params=params, limit=limit)))
 
     def caql(self, query, start, period, count):
         """
@@ -204,8 +219,7 @@ class CirconusData(object):
         - slots_names are currently output[i]
         - For histogram output only a single slot is returned
         """
-        if type(start) == datetime:
-            start = start.timestamp()
+        start = _fix_time(start, period)
         params = {
             "query": query,
             "period": period,
@@ -217,13 +231,15 @@ class CirconusData(object):
             # In this case, we have only a single output metric and res looks like:
             # res = [[1467892920, 60, {'1.2e+02': 1, '2': 1, '1': 1}], ... ]
             return {
-                'output[0]' : [ Circllhist.from_dict(row[2]) for row in res ]
+                'time' : [ row[0] for row in res ],
+                'output[0]' : [ Circllhist.from_dict(row[2]) for row in res ],
             }
         else:
             # In the numeric case res looks like this:
             # res = [[1467892920, [1, 2, 3]], [1467892980, [1, 2, 3]], ... ]
             out = {}
             width = len(res[0][1])
+            out['time'] = [ row[0] for row in res ]
             for i in range(width):
                 out['output[{}]'.format(i)] = [ row[1][i] for row in res ]
             return out
