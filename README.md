@@ -1,6 +1,13 @@
 # Data Science for Effective Operations
 
-## Usage
+This workshop has been held at differnt occasions with slightly different content.
+Please look into the corresponding sub-folders to access the persented material.
+
+* [Velocity London 2017](2017-10-17-Velocity-London/)
+
+* [DevOpsDays Kiel 2018](2018-05-15-DOD-Kiel/)
+
+## Bootstrap
 
 If you have access to a machine with docker installed, you can boostrap
 an interactive working environment with a single command:
@@ -22,15 +29,6 @@ done
 # * local url: http://0.0.0.0:9998/?token=F2AlHtJBvHIqoLFEVfbMnUVFkcpFlJuZ
 # * public url: http://11.22.33.192:9998/?token=F2AlHtJBvHIqoLFEVfbMnUVFkcpFlJuZ
 ```
-
-## Events
-
-This workshop has been held at the following events.
-You can find the presentation material in the corresponding sub-folder.
-
-* [Velocity London 2017](2017-10-17-Velocity-London/)
-
-* [DevOpsDays Kiel 2018](2018-05-15-DOD-Kiel/)
 
 ## Datasets
 
