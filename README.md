@@ -1,5 +1,28 @@
 # Data Science for Effective Operations
 
+## Usage
+
+If you have access to a machine with docker installed, you can boostrap
+an interactive working environment with a single command:
+
+```
+$ ./docker.sh --run
+[...]
+#
+# Data Science 4 Effective Operations
+#
+# starting jupyter notebook&lab ...
+done
+#
+# Notebook:
+# * local url: http://0.0.0.0:9999/?token=F2AlHtJBvHIqoLFEVfbMnUVFkcpFlJuZ
+# * public url: http://11.22.33.192:9999/?token=F2AlHtJBvHIqoLFEVfbMnUVFkcpFlJuZ
+#
+# Lab:
+# * local url: http://0.0.0.0:9998/?token=F2AlHtJBvHIqoLFEVfbMnUVFkcpFlJuZ
+# * public url: http://11.22.33.192:9998/?token=F2AlHtJBvHIqoLFEVfbMnUVFkcpFlJuZ
+```
+
 ## Events
 
 This workshop has been held at the following events.
