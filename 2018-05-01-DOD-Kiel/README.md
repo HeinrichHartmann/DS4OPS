@@ -1,5 +1,7 @@
 # Workshop Material for DevOpsDays Kiel 2018
 
+https://www.devopsdays.org/events/2018-kiel/workshop/heinrich-hartmann/
+
 ## Getting started
 
 For the practical parts, you will need access to a machine with Docker installed.
@@ -14,8 +16,6 @@ less docker.sh # make sure it looks sane
 ## Material
 
 Workshop material can be found in this folder:
-
-https://github.com/HeinrichHartmann/DS4OPS/tree/master/work/dodKiel
 
 - Theory Parts are prefixed with a T
 - Practical parts are prefied with a P
