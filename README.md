@@ -5,9 +5,9 @@
 This workshop has been held at the following events.
 You can find the presentation material in the corresponding sub-folder.
 
-* [2017-10-17-Velocity-London/](Velocity London 2017)
+* [Velocity London 2017](2017-10-17-Velocity-London/)
 
-* [2018-05-15-DOD-Kiel/](DevOpsDays Kiel 2018)
+* [DevOpsDays Kiel 2018](2018-05-15-DOD-Kiel/)
 
 ## Datasets
 
